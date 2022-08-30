@@ -2,7 +2,7 @@
 poor man`s stackoverflow
 
 # online version
-http://gctmlp.ru/
+https://gctmlp.ru/
 
 # About
 
