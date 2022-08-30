@@ -1,12 +1,13 @@
 # Hasker
 poor man`s stackoverflow
 
-# online version
+# Online version
 https://gctmlp.ru/
 
 # About
 
 This is educational project, which functional is similar to stackoverflow.com
+
 Technology stack is:
   - Nginx
   - uWSGI
@@ -65,4 +66,25 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'gctmlp.ru']
 7. Set up nginx
 example configuration at "/etc/nginx/sites-enabled/hasker"
 ```
+server {
+    listen 443 ssl;
+    ssl_certificate /etc/ssl/yourcrt.crt;
+    ssl_certificate_key /etc/ssl/yourkey.key;
+    server_name yourservername;
+
+    location / {
+       uwsgi_pass unix:///run/uwsgi/app/hasker/socket;
+       include uwsgi_params;
+       uwsgi_read_timeout 300s;
+       client_max_body_size 32m;
+    }
+
+    location  /static/ {
+         alias /hasker_project/hasker/static/;
+    }
+
+    location /media/ {
+        alias /hasker_project/hasker/media/;
+    }
+}
 ```
