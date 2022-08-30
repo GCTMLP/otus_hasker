@@ -63,6 +63,15 @@ example
 ```
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'gctmlp.ru']
 ```
+7. Set up email delivery 
+```
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'your_user_email'
+EMAIL_HOST_PASSWORD = 'your_password'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+```
+
 7. Set up nginx
 example configuration at "/etc/nginx/sites-enabled/hasker"
 ```
