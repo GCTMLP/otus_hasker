@@ -4,7 +4,7 @@ poor man`s stackoverflow
 # online version
 http://gctmlp.ru/
 
-#About
+# About
 
 This is educational project, which functional is similar to stackoverflow.com
 Technology stack is:
@@ -53,6 +53,7 @@ DATABASES = {
 
 5. Apply migrations
 ```
+python3 manage.py makemigration
 python3 manage.py migrate
 ```
 
