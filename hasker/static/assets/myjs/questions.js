@@ -1,4 +1,5 @@
 let app = new Vue({
+  
   el: "#questions",
   delimiters: ["{", "}"],
   data: {
@@ -18,10 +19,10 @@ let app = new Vue({
       tags: null,
     }
   },
-  methods: {
+  methods: { 
     init: function() {
         this.get_questions(this.filter.page);
-        this.get_popular_questions()
+        this.get_popular_questions()   
 
     },
     get_questions: function(page) {
@@ -38,12 +39,10 @@ let app = new Vue({
         all_data = JSON.parse(data)
         
         this.questions = all_data['data']
-        console.log(this.questions[0].is_voted)
         q_count = Number(all_data['count'])
         this.filter.pages = Math.floor(q_count / this.filter.limit);
         if(q_count % this.filter.limit != 0){
           this.filter.pages += 1
-          console.log(this.filter.pages)
         }
       });
 
@@ -57,7 +56,6 @@ let app = new Vue({
       }).then(async response => {
         const data = await response.data;
         all_data = JSON.parse(data)
-        console.log(all_data)
         this.popular_questions = all_data
       });
       
@@ -103,13 +101,10 @@ let app = new Vue({
     change_page_big: function(page_chosen){
       if(page_chosen % 5 == 0 && page_chosen > this.filter.page){
         this.filter.pages_big+=4
-        console.log(this.filter.pages_big)
       }
       if(page_chosen % 5 == 0 && page_chosen < this.filter.page){
         this.filter.pages_big-=4
-        console.log(this.filter.pages_big)
       }
-      console.log(this.filter.pages_big)
       this.filter.page = page_chosen
       this.get_questions(this.filter.page)
     },
@@ -129,27 +124,50 @@ let app = new Vue({
     },
 
     ask_question: function(){
-      if (this.new_quest.tags.split(' ').length <=3){
-        params = {
-          title: this.new_quest.title,
-          text: this.new_quest.text,
-          tags: this.new_quest.tags,
+      try{
+        if (this.new_quest.tags.split('; ').length <=3){
+          params = {
+            title: this.new_quest.title,
+            text: this.new_quest.text,
+            tags: this.new_quest.tags,
+          }
+
+          axios.post("ask_question/", params, {
+            'Accept': 'application/json'
+            
+          }).then(async response => {
+            const data = await response.data;
+            if (data != 'false'){
+              
+              window.location.href = '/answers?q='+data
+            }
+            else {
+              this.$toastr.defaultTimeout = 3000;
+              this.$toastr.defaultPosition = "toast-top-right";
+              this.$toastr.defaultStyle = { "background-color": "red" },
+              // Send message to browser screen
+              this.$toastr.s(
+                "Some errors in your question"
+              );
+            }
+            
+          });
+
         }
+        else {
+          this.istag_invalid = true
 
-        axios.post("ask_question/", params, {
-          'Accept': 'application/json'
-          
-        }).then(async response => {
-          const data = await response.data;
-          window.location.href = '/answers?q='+data
-          
-        });
-
+        }
       }
-      else {
-        this.istag_invalid = true
+      catch{
+      this.$toastr.defaultTimeout = 3000;
+            this.$toastr.defaultPosition = "toast-top-right";
+            this.$toastr.defaultStyle = { "background-color": "red" },
+            // Send message to browser screen
+            this.$toastr.s(
+              "Some errors in your question"
+            );
       }
-      
     },
 
     plus_vote: function(id){

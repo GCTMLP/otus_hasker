@@ -111,11 +111,14 @@ class PlusVoteAnswer(View):
 	"""
 
 	def post(self, request):
-		session_user = request.user.id
-		request_data = json.loads(request.body)
-		VotesAnswers.objects.create(answer_id=request_data['id'], 
-								user_id=session_user)
-		return JsonResponse('true', safe=False)
+		try:
+			session_user = request.user.id
+			request_data = json.loads(request.body)
+			VotesAnswers.objects.create(answer_id=request_data['id'], 
+									user_id=session_user)
+			return JsonResponse('true', safe=False)
+		except:
+			return JsonResponse('false', safe=False)
 
 class MinusVoteAnswer(View):
 	"""
@@ -125,12 +128,15 @@ class MinusVoteAnswer(View):
 	"""
 
 	def post(self, request):
-		session_user = request.user.id
-		request_data = json.loads(request.body)
-		del_qs = VotesAnswers.objects.get(answer_id=request_data['id'], 
-								user_id=session_user)
-		del_qs.delete()	
-		return JsonResponse('true', safe=False)
+		try:
+			session_user = request.user.id
+			request_data = json.loads(request.body)
+			del_qs = VotesAnswers.objects.get(answer_id=request_data['id'], 
+									user_id=session_user)
+			del_qs.delete()	
+			return JsonResponse('true', safe=False)
+		except:
+			return JsonResponse('false', safe=False)
 
 class AnswersSave(View):
 	"""
@@ -140,26 +146,29 @@ class AnswersSave(View):
 	"""
 
 	def post(self, request):
-		# Получаем ссылку на вопрос
-		link = request.META['HTTP_REFERER']
-		# Получаем данные нового ответа
-		session_user = request.user.id
-		request = json.loads(request.body)
-		# Создаем запись в бд с параметрами нового ответа
-		Answers.objects.create(answer_text=request['text'], 
-								pub_date=datetime.now(),
-								question_id=request['q_id'],
-								user_id=session_user)
-		# получаем данные о вопросе, на который пришел ответ для того,
-		# чтобы понимать, кому и какой email отправлять
-		question_data = Question.objects.filter(id=request['q_id'])\
-						.select_related('user')[0]
-		# Вызываем встроенную функцию отправки email
-		send_mail('Hasker', f'You have new answer on question, \
-				"{question_data.question_header}". \n link: {link}',\
-				 settings.EMAIL_HOST,[question_data.user.email],\
-				 fail_silently=False)
-		return JsonResponse('true', safe=False)
+		try:
+			# Получаем ссылку на вопрос
+			link = request.META['HTTP_REFERER']
+			# Получаем данные нового ответа
+			session_user = request.user.id
+			request = json.loads(request.body)
+			# Создаем запись в бд с параметрами нового ответа
+			Answers.objects.create(answer_text=request['text'], 
+									pub_date=datetime.now(),
+									question_id=request['q_id'],
+									user_id=session_user)
+			# получаем данные о вопросе, на который пришел ответ для того,
+			# чтобы понимать, кому и какой email отправлять
+			question_data = Question.objects.filter(id=request['q_id'])\
+							.select_related('user')[0]
+			# Вызываем встроенную функцию отправки email
+			send_mail('Hasker', f'You have new answer on question, \
+					"{question_data.question_header}". \n link: {link}',\
+					 settings.EMAIL_HOST,[question_data.user.email],\
+					 fail_silently=False)
+			return JsonResponse('true', safe=False)
+		except:
+			return JsonResponse('false', safe=False)
 
 
 class CorrectUncorrectAnswer(View):

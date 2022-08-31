@@ -27,7 +27,6 @@ let app = new Vue({
       }).then(async response => {
         const data = await response.data;
         all_data = JSON.parse(data)
-        console.log(all_data)
         this.login = all_data['login']
         this.email = all_data['email']
         this.foto = all_data['foto']
@@ -39,12 +38,24 @@ let app = new Vue({
             formData.append('file', this.file);
             formData.append('login', this.login);
             formData.append('email', this.email);
-            console.log(this.file)
             axios.post( 'change_user_data/',
                 formData
-            ).then(function(){
-          console.log('SUCCESS!!');
-          app1.get_user_data()
+            ).then(async response => {
+            const data = await response.data;
+            if (data == 'true'){
+              this.$toastr.defaultTimeout = 3000;
+              this.$toastr.defaultPosition = "toast-top-right";
+              this.$toastr.defaultStyle = { "background-color": "green" },
+              this.$toastr.s("You changed data");
+              app1.get_user_data()
+            }
+            else{
+              this.$toastr.defaultTimeout = 3000;
+              this.$toastr.defaultPosition = "toast-top-right";
+              this.$toastr.defaultStyle = { "background-color": "red" },
+              this.$toastr.s("Errors in changed data");
+            }
+            
         })
     },
     hide_foto(){

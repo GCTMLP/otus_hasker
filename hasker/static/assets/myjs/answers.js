@@ -48,9 +48,7 @@ let app = new Vue({
         this.answers = all_data['data']
         this.question = all_data['question'][0]
         this.make_truth = all_data['make_true_answer']
-        console.log(this.make_truth)
         q_count = Number(all_data['count'])
-        console.log(q_count)
         this.filter.pages = Math.floor(q_count / this.filter.limit);
         if(q_count % this.filter.limit != 0){
           this.filter.pages += 1
@@ -67,7 +65,6 @@ let app = new Vue({
       }).then(async response => {
         const data = await response.data;
         all_data = JSON.parse(data)
-        console.log(all_data)
         this.popular_questions = all_data
       });
     },
@@ -102,13 +99,10 @@ let app = new Vue({
     change_page_big: function(page_chosen){
       if(page_chosen % 5 == 0 && page_chosen > this.filter.page){
         this.filter.pages_big+=4
-        console.log(this.filter.pages_big)
       }
       if(page_chosen % 5 == 0 && page_chosen < this.filter.page){
         this.filter.pages_big-=4
-        console.log(this.filter.pages_big)
       }
-      console.log(this.filter.pages_big)
       this.filter.page = page_chosen
       this.init()
     },
@@ -122,7 +116,6 @@ let app = new Vue({
       this.init()
     },
     answer_question: function(){
-      console.log()
       
       params = {
         text: this.a_text,
@@ -133,10 +126,20 @@ let app = new Vue({
           
       }).then(async response => {
         const data = await response.data;
-        console.log(JSON.parse(data))
-        
-        this.init()
-        this.a_text = null  
+        if (data == 'true'){
+          this.$toastr.defaultTimeout = 3000;
+          this.$toastr.defaultPosition = "toast-top-right";
+          this.$toastr.defaultStyle = { "background-color": "green" },
+          this.$toastr.s("You answered question");
+          this.init()
+          this.a_text = null  
+        }
+        else{
+          this.$toastr.defaultTimeout = 3000;
+          this.$toastr.defaultPosition = "toast-top-right";
+          this.$toastr.defaultStyle = { "background-color": "red" },
+          this.$toastr.s("Errors in answer");
+        }
       });
       
       
@@ -166,7 +169,6 @@ let app = new Vue({
     },
 
     uncorrect: function(id_answer){
-      console.log(id_answer)
       params={
         id_a: id_answer,
         func: "uncorrect"
@@ -181,7 +183,6 @@ let app = new Vue({
     },
 
     correct: function(id_answer, id_question){
-      console.log(id_answer)
       params={
         id_a: id_answer,
         id_q: id_question,
