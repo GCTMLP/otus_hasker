@@ -1,4 +1,5 @@
 from django.db import models
+
 from hasker.questions.models import Question
 
 
@@ -11,7 +12,7 @@ class Answers(models.Model):
 	answer_text = models.CharField(max_length=5000)
 	pub_date = models.DateTimeField(auto_now_add=True)
 	user = models.ForeignKey('auth.User', on_delete = models.CASCADE)
-	truth = models.BooleanField(default=False)
+	is_correct = models.BooleanField(default=False)
 
 	# Происходит сортировка по дате при запросе данных из базы
 	class Meta:

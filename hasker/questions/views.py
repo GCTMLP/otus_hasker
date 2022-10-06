@@ -1,15 +1,17 @@
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 from django.http import JsonResponse
-import json
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.db.models import Q, Count
+from django.db import transaction
+
+from datetime import datetime
+import json
+
 from hasker.questions.models import Question, VotesQuestion
 from hasker.answers.models import Answers
 from hasker.settings.models import Profile
-from django.contrib.auth.models import User
-from datetime import datetime
-from django.db.models import Q, Count
-
 
 
 class IndexView(TemplateView):
@@ -17,8 +19,9 @@ class IndexView(TemplateView):
 	Показываем основной шаблон вопросов (шаблон изначально пустой,
 	все данные подгружаются в него через vue.js ajax запросом)
 	"""
-	template_name = "QuestionPage.html"
+	template_name = "question.html"
 	
+
 class QuestionsView(View):
 	"""
 	Класс обработки ajax запроса. Полученаем обо всех вопросах
@@ -159,8 +162,9 @@ class PlusVote(View):
 	def post(self, request):
 		try:
 			session_user = request.user.id
-			request_data = json.loads(request.body)
-			VotesQuestion.objects.create(question_id=request_data['id'], 
+			request_data = json.loads(request.body)	
+			with transaction.atomic():
+				VotesQuestion.objects.create(question_id=request_data['id'], 
 									user_id=session_user)
 			return JsonResponse('true', safe=False)
 		except:
@@ -177,9 +181,10 @@ class MinusVote(View):
 		try:
 			session_user = request.user.id
 			request_data = json.loads(request.body)
-			del_qs = VotesQuestion.objects.get(question_id=request_data['id'], 
+			with transaction.atomic():
+				del_qs = VotesQuestion.objects.get(question_id=request_data['id'], 
 									user_id=session_user)
-			del_qs.delete()	
+				del_qs.delete()	
 			return JsonResponse('true', safe=False)
 		except:
 			return JsonResponse('false', safe=False)

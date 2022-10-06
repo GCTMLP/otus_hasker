@@ -4,17 +4,19 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.db import models
 from django.contrib.auth.models import User
-from hasker.settings.models import Profile
-import json
 from django.conf import settings
+
+import json
 import re
+
+from hasker.settings.models import Profile
 
 class SettingsView(TemplateView):
 	"""
 	Показываем основной шаблон страницы настройки (шаблон изначально пустой,
 	все данные подгружаются в него через vue.js ajax запросом)
 	"""
-	template_name = "SettingsPage.html"
+	template_name = "settings.html"
 
 class SettingsViewData(View):
 	"""

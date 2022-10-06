@@ -1,6 +1,4 @@
 from rest_framework import viewsets
-
-from .serializers import QuestionSerializer, AnswersSerializer, OneQuestionSerializer
 from hasker.questions.models import Question, VotesQuestion
 from hasker.answers.models import Answers, VotesAnswers
 from django.contrib.auth import get_user_model
@@ -13,11 +11,12 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from .serializers import QuestionSerializer
-from hasker.api.serializers import AuthTokenSerializer
 from django.db.models import Q, Count
 from django.core import serializers 
- 
+
+from .serializers import QuestionSerializer
+from hasker.api.serializers import AuthTokenSerializer
+from .serializers import QuestionSerializer, AnswersSerializer, OneQuestionSerializer
  
 class CustomAuthToken(ObtainAuthToken):
     """

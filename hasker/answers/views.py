@@ -1,31 +1,32 @@
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 from django.http import JsonResponse
-import json
 from django.conf import settings
-from hasker.answers.models import Answers, VotesAnswers
-from hasker.questions.models import Question
-from hasker.settings.models import Profile
 from django.contrib.auth.models import User
-from datetime import datetime
 from django.db.models import Q
+from django.db import transaction
 from django.core import serializers
 from django.core.mail import send_mail
 
+from datetime import datetime
+import json
+
+from hasker.answers.models import Answers, VotesAnswers
+from hasker.questions.models import Question
+from hasker.settings.models import Profile
 
 class AnswersView(TemplateView):
 	"""
 	Показываем основной шаблон ответов (шаблон изначально пустой,
 	все данные подгружаются в него через vue.js ajax запросом)
 	"""
-	template_name = "AnswersPage.html"
+	template_name = "answers.html"
 
 class AnswersViewData(View):
 	"""
 	Класс обработки ajax запроса. Полученаем инфорацию о конкретном 
 	вопросе и обо всех ответах на него
 	"""
-
 	def post(self, request):
 		# Необходимые данные из запроса (сессию и тело запроса)
 		session_user = request.user.id
@@ -58,7 +59,7 @@ class AnswersViewData(View):
 			one_a['text'] = q.answer_text
 			one_a['pub_date'] = q.pub_date.strftime("%m/%d/%Y %H:%m")
 			one_a['user_name'] = q.user.username
-			one_a['truth'] = q.truth
+			one_a['is_correct'] = q.is_correct
 			one_a['id'] = q.id
 			# Создаем путь до фотографии пользователя, написавшего вопрос
 			one_a['foto'] = settings.AVATARS_URL+'/'+\
@@ -114,7 +115,8 @@ class PlusVoteAnswer(View):
 		try:
 			session_user = request.user.id
 			request_data = json.loads(request.body)
-			VotesAnswers.objects.create(answer_id=request_data['id'], 
+			with transaction.atomic():
+				VotesAnswers.objects.create(answer_id=request_data['id'], 
 									user_id=session_user)
 			return JsonResponse('true', safe=False)
 		except:
@@ -131,9 +133,11 @@ class MinusVoteAnswer(View):
 		try:
 			session_user = request.user.id
 			request_data = json.loads(request.body)
-			del_qs = VotesAnswers.objects.get(answer_id=request_data['id'], 
+
+			with transaction.atomic():
+				del_qs = VotesAnswers.objects.get(answer_id=request_data['id'], 
 									user_id=session_user)
-			del_qs.delete()	
+				del_qs.delete()	
 			return JsonResponse('true', safe=False)
 		except:
 			return JsonResponse('false', safe=False)
@@ -184,7 +188,7 @@ class CorrectUncorrectAnswer(View):
 		if request['func'] == 'uncorrect':
 			# Отменяем "правильность" ответа
 			change_answer = Answers.objects.get(id=request['id_a'])
-			change_answer.truth = 0
+			change_answer.is_correct = 0
 			change_answer.save()
 			return JsonResponse('true', safe=False)
 		elif request['func'] == 'correct':
@@ -194,15 +198,15 @@ class CorrectUncorrectAnswer(View):
 			# его "правильность"
 			try:
 				change_answer_f = Answers.objects.select_related('question')\
-									.get(question_id=request['id_q'], truth=1)
-				change_answer_f.truth = 0
+									.get(question_id=request['id_q'], is_correct=1)
+				change_answer_f.is_correct = 0
 				change_answer_f.save()
 			# Срабатывает, если никакой ответ не был помечен как правильный
 			except:
 				pass
 			# помечаем выбранный ответ как правильный
 			change_answer_t = Answers.objects.get(id=request['id_a'])
-			change_answer_t.truth = 1
+			change_answer_t.is_correct = 1
 			change_answer_t.save()
 			return JsonResponse('true', safe=False)
 		# Если пришел некорректый запрос
