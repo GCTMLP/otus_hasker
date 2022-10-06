@@ -98,4 +98,4 @@ server {
 }
 ```
 
-8. Import styles from ```kkk``` and add them to hasker/static/assets
+9. Import styles from ```https://github.com/GCTMLP/html_styles``` and add them to hasker/static/assets
