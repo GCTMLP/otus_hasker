@@ -97,3 +97,5 @@ server {
     }
 }
 ```
+
+8. Import styles from ```kkk``` and add them to hasker/static/assets
