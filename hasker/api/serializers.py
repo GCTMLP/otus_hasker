@@ -11,7 +11,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Question
 		fields = (	'id',
-					'question_header', 
+				'question_header', 
         			'question_text', 
         			'pub_date', 
         			'tags', 
@@ -25,7 +25,7 @@ class OneQuestionSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Question
 		fields = (	'id',
-					'question_header', 
+				'question_header', 
         			'question_text', 
         			'pub_date', 
         			'tags', 
