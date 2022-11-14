@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+
+from .serializers import QuestionSerializer, AnswersSerializer, OneQuestionSerializer
 from hasker.questions.models import Question, VotesQuestion
 from hasker.answers.models import Answers, VotesAnswers
 from django.contrib.auth import get_user_model
@@ -11,35 +13,12 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from .serializers import QuestionSerializer
+from hasker.api.polls.serializers import AuthTokenSerializer
 from django.db.models import Q, Count
 from django.core import serializers 
-
-from .serializers import QuestionSerializer
-from hasker.api.serializers import AuthTokenSerializer
-from .serializers import QuestionSerializer, AnswersSerializer, OneQuestionSerializer
+from rest_framework import viewsets
  
-class CustomAuthToken(ObtainAuthToken):
-    """
-    Класс получения токена для аутентификации при вводе логина и пароля
-    """
-    authentication_classes = [authentication.BasicAuthentication]
-    @swagger_auto_schema(responses={
-        "201": openapi.Response(
-            description = ("User has got Token"),
-            schema=AuthTokenSerializer,
-        )
-    })
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        response201 = AuthTokenSerializer\
-        				(data={"token": token.key, "user_id": user.pk})
-        response201.is_valid(raise_exception=True)
-        return JsonResponse(response201.data)
-
 class StandardResultsSetPagination(PageNumberPagination):
     """
     Класс, который задает пагинацию на странице
@@ -48,7 +27,8 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 20
 
-class QuestionApi(generics.ListAPIView):
+
+class QuestionApi(viewsets.ModelViewSet):
 	"""
 	Класс для получения данных index (все вопросы)
 	"""
@@ -56,22 +36,10 @@ class QuestionApi(generics.ListAPIView):
 	pagination_class = StandardResultsSetPagination
 	permission_classes=[IsAuthenticated]
 
-	def get_queryset(self):
-		return Question.objects\
+	queryset = Question.objects\
 						.annotate(votes_count=Count('votesquestion__id', distinct=True))\
 						.annotate(answer_count=Count('answers__id', distinct=True))\
 						.order_by('-votes_count', '-pub_date')
-
-
-class OneQuestionApi(generics.ListAPIView):
-	"""
-	Класс для получения данных одного вопроса
-	"""
-	serializer_class = OneQuestionSerializer
-   
-	def get_queryset(self):
-		find_id = self.kwargs['id']
-		return Question.objects.filter(id=find_id)
 
 
 class AnswersApi(generics.ListAPIView):
